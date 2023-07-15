@@ -1,12 +1,45 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:todolist_app/models/todo.dart';
 
 class TodoProvider {
   late Database _database;
-
+  Todo todo = Todo();
   Future<Database> get database async {
     _database = await initDB();
     return _database;
+  }
+
+  Future<void> createTodo(Todo todo) async {
+    final db = await database;
+    await db.insert('Todo', todo.toMap());
+  }
+
+  Future<List<Todo>> getTodos() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('Todo');
+    return List.generate(maps.length, (index) {
+      return Todo.fromMap(maps[index]);
+    });
+  }
+
+  Future<void> updateTodo(Todo todo) async {
+    final db = await database;
+    await db.update(
+      'Todo',
+      todo.toMap(),
+      where: 'number = ?',
+      whereArgs: [todo.number],
+    );
+  }
+
+  Future<void> deleteTodo(int number) async {
+    final db = await database;
+    await db.delete(
+      'Todo',
+      where: 'number = ?',
+      whereArgs: [number],
+    );
   }
 
   initDB() async {

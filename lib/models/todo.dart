@@ -1,6 +1,6 @@
 class Todo {
   Todo({
-    required this.number,
+    this.number = 1,
     this.sdate = "",
     this.udate = "",
     this.edate = "",
@@ -31,7 +31,6 @@ class Todo {
 
   Map<String, dynamic> toMap() {
     return {
-      "number": number,
       "sdate": sdate,
       "udate": udate,
       "edate": edate,
@@ -45,5 +44,23 @@ class Todo {
       "detail": detail,
       "state": state,
     };
+  }
+
+  factory Todo.fromMap(Map<String, dynamic> map) {
+    return Todo(
+      number: map["number"] ?? 1, // null인 경우 기본값 1 할당
+      sdate: map["sdate"] ?? "",
+      udate: map["udate"] ?? "",
+      edate: map["edate"] ?? "",
+      stime: map["stime"] ?? "",
+      utime: map["utime"] ?? "",
+      etime: map["etime"] ?? "",
+      cdate: map["cdate"] ?? "",
+      ctime: map["ctime"] ?? "",
+      title: map["title"] ?? "",
+      tag: map["tag"] ?? "",
+      detail: map["detail"] ?? "",
+      state: map["state"] ?? 0,
+    );
   }
 }

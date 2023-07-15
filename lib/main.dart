@@ -1,4 +1,6 @@
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
+import 'package:todolist_app/models/todo.dart';
 import 'package:todolist_app/models/todo_provider.dart';
 
 void main() async {
@@ -31,9 +33,13 @@ class ListPage extends StatefulWidget {
 
 class _ListPageState extends State<ListPage> {
   String option = "기본";
-  TextEditingController? todoController;
+  TextEditingController todoController = TextEditingController();
+  final DateTime systime = DateTime.now();
+
   @override
   Widget build(BuildContext context) {
+    Todo todo = Todo();
+    TodoProvider todoProvider = TodoProvider();
     return Scaffold(
       body: SizedBox(
         height: MediaQuery.of(context).size.height * 0.3,
@@ -67,7 +73,12 @@ class _ListPageState extends State<ListPage> {
               ),
             ),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                todo.sdate = formatDate(systime, [yyyy, '-', mm, '-', dd]);
+                todo.title = todoController.text;
+                todoProvider.createTodo(todo);
+                print(todoProvider.getTodos());
+              },
               child: const Text("추가하기"),
             )
           ],
