@@ -1,5 +1,5 @@
-import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:todolist_app/models/todo.dart';
 import 'package:todolist_app/models/todo_provider.dart';
 
@@ -11,7 +11,7 @@ void main() async {
 }
 
 class Todolist extends StatelessWidget {
-  const Todolist({super.key});
+  const Todolist({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class Todolist extends StatelessWidget {
 }
 
 class ListPage extends StatefulWidget {
-  const ListPage({super.key});
+  const ListPage({Key? key}) : super(key: key);
 
   @override
   State<ListPage> createState() => _ListPageState();
@@ -36,52 +36,24 @@ class _ListPageState extends State<ListPage> {
   TextEditingController todoController = TextEditingController();
   final DateTime systime = DateTime.now();
 
+  Future fetch() async {
+    var res = await http.get(Uri.parse("http://192.168.0.5:3001/"));
+    return res.body;
+  }
+
   @override
   Widget build(BuildContext context) {
     Todo todo = Todo();
     TodoProvider todoProvider = TodoProvider();
+
     return Scaffold(
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.3,
-        child: Row(
-          children: [
-            Radio(
-              value: "기본",
-              groupValue: option,
-              onChanged: (value) {
-                setState(
-                  () {
-                    option = value!;
-                  },
-                );
-              },
-            ),
-            Radio(
-              value: "상세",
-              groupValue: option,
-              onChanged: (value) {
-                setState(
-                  () {
-                    option = value!;
-                  },
-                );
-              },
-            ),
-            Expanded(
-              child: TextField(
-                controller: todoController,
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                todo.sdate = formatDate(systime, [yyyy, '-', mm, '-', dd]);
-                todo.title = todoController.text;
-                todoProvider.createTodo(todo);
-                print(todoProvider.getTodos());
-              },
-              child: const Text("추가하기"),
-            )
-          ],
+      body: Center(
+        child: FutureBuilder(
+          future: fetch(),
+          builder: (context, snap) {
+            if (!snap.hasData) return const CircularProgressIndicator();
+            return Text(snap.data);
+          },
         ),
       ),
     );
