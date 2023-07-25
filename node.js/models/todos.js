@@ -13,7 +13,8 @@ export default (sequelize) => {
       allowNull: false
     },
     sdate: {
-      type: Sequelize.DataTypes.STRING(8),
+      defaultValue: Sequelize.NOW,
+      type: Sequelize.DataTypes.DATE,
       allowNull: false
     },
     udate: {
@@ -27,6 +28,11 @@ export default (sequelize) => {
     detail: {
       type: Sequelize.DataTypes.INTEGER,
       allowNull: true
+    },
+    state: {
+      defaultValue: 0,
+      type: Sequelize.DataTypes.INTEGER,
+      allowNull: false,
     }
   }, {
     sequelize,

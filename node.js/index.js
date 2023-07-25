@@ -8,7 +8,7 @@ import ApiRouter from "./routes/api.js";
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-db.sequelize.sync({ force: false })
+db.sequelize.sync({ force: true })
     .then(() => {
         console.log('데이터 베이스 연결 성공');
     })
