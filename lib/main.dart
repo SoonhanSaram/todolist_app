@@ -39,11 +39,13 @@ class _ListPageState extends State<ListPage> {
   List<Widget> textFields = [];
   List<TextEditingController> detailControllers = [];
   TextEditingController todoController = TextEditingController();
+
   final DateTime systime = DateTime.now();
 
   Future<List<dynamic>> getList() async {
     var res = await http.get(url);
     List<dynamic> data = jsonDecode(res.body);
+    // print(data);
     return data;
   }
 
@@ -70,9 +72,10 @@ class _ListPageState extends State<ListPage> {
     }
   }
 
-  Future updateState(number, state) async {
+  Future updateState(number, state, database) async {
     await http.post(
       url.replace(path: "${url.path}update"),
+      headers: {"dataBase": database},
       body: {
         "todo_num": number.toString(),
         "state": (state == 0 ? 1 : 0).toString(),
@@ -121,7 +124,7 @@ class _ListPageState extends State<ListPage> {
                   setState(() {
                     showDetail = true;
                     if (showDetail) {
-                      textFields.add(_buildTextField());
+                      textFields.add(_buildTextField(context));
                     } else {
                       textFields.clear();
                     }
@@ -187,17 +190,22 @@ class _ListPageState extends State<ListPage> {
         } else if (snap.hasError) {
           return Text('Error: ${snap.error}');
         }
-        final List<dynamic> data = snap.data;
+        final List<dynamic> data = snap.data!;
         return ListView.builder(
           itemCount: data.length,
           itemBuilder: (context, index) {
+            List<dynamic> details = data[index]['details'];
+            int completedCount = details.where((item) => item['state'] == 1).length;
+            double ratio = details.isEmpty ? 0 : completedCount / details.length;
             return data[index]['state'] == 0
                 ? ListTile(
+                    tileColor: Colors.indigoAccent.withOpacity(ratio),
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text("${index + 1}. "),
-                        Expanded(
+                        SizedBox(
+                          height: 25,
                           child: Text(
                             data[index]['title'],
                             overflow: TextOverflow.ellipsis,
@@ -222,10 +230,36 @@ class _ListPageState extends State<ListPage> {
                         ),
                       ],
                     ),
+                    subtitle: ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: details.length,
+                      itemBuilder: (context, subIndex) {
+                        bool isCompleted = details[subIndex]['state'] == 1;
+                        return ListTile(
+                          onTap: () {
+                            updateState(
+                              details[subIndex]['details_num'],
+                              details[subIndex]['state'],
+                              "details",
+                            );
+                            setState(() {});
+                          },
+                          title: Text(
+                            "${subIndex + 1} : ${details[subIndex]['title']}",
+                            style: TextStyle(
+                              decoration: isCompleted ? TextDecoration.lineThrough : null,
+                              color: isCompleted ? Colors.grey : Colors.black,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     onTap: () {
                       updateState(
                         data[index]['todo_num'],
                         data[index]['state'],
+                        "todos",
                       );
                       setState(() {});
                     },
@@ -239,10 +273,7 @@ class _ListPageState extends State<ListPage> {
                       ),
                     ),
                     onTap: () {
-                      updateState(
-                        data[index]['todo_num'],
-                        data[index]['state'],
-                      );
+                      updateState(data[index]['todo_num'], data[index]['state'], "todos");
                       setState(() {});
                     },
                   );
@@ -252,7 +283,7 @@ class _ListPageState extends State<ListPage> {
     );
   }
 
-  Widget _buildTextField() {
+  Widget _buildTextField(context) {
     TextEditingController controller = TextEditingController();
     detailControllers.add(controller);
     return Row(
@@ -292,8 +323,7 @@ class _ListPageState extends State<ListPage> {
           ),
           onPressed: () {
             setState(() {
-              textFields.add(_buildTextField());
-              detailControllers.add(controller);
+              textFields.add(_buildTextField(context));
             });
           },
           child: const Icon(
