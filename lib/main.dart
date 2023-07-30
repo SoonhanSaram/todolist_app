@@ -1,15 +1,78 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:todolist_app/models/todo_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:http/http.dart' as http;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  TodoProvider todoProvider = TodoProvider();
-  await todoProvider.initDB();
-  runApp(const Todolist());
+  await dotenv.load(fileName: 'assets/config/.env');
+  KakaoSdk.init(nativeAppKey: dotenv.env['APP_KEY']);
+  runApp(const Login());
+}
+
+class Login extends StatelessWidget {
+  const Login({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "Login",
+      theme: ThemeData.dark(),
+      home: const LoginPage(),
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  void _check_user_info() async {
+    try {
+      User user = await UserApi.instance.me();
+      print('사용자 정보 요청 성공' '\n회원번호 : ${user.id}' '\n닉네임 : ${user.kakaoAccount?.profile?.nickname}');
+    } catch (e) {
+      print('사용자 정보 요청 실패 $e');
+    }
+  }
+
+  Future loginWithKakaoAccount() async {
+    try {
+      OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
+      print("token : $token");
+      _check_user_info();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const Todolist(),
+        ),
+      );
+    } catch (e) {
+      print("로그인 실패");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: TextButton(
+          onPressed: () => loginWithKakaoAccount(),
+          child: Image.asset(
+            'assets/images/kakao_login_medium.png',
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class Todolist extends StatelessWidget {
