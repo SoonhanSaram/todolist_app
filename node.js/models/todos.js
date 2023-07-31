@@ -6,7 +6,12 @@ export default (sequelize) => {
       autoIncrement: true,
       type: Sequelize.DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true
+      primaryKey: true,
+    },
+    nickname: {
+      type: Sequelize.DataTypes.STRING(10),
+      allowNull: false,
+      primaryKey: true,
     },
     title: {
       type: Sequelize.DataTypes.STRING(255),

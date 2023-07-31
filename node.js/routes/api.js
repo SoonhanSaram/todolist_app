@@ -7,8 +7,9 @@ const detailsDB = db.models.details;
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
-
+    const nickname = req.query['nickname'];
     const todoList = await todoDB.findAll({
+        where: { nickname: nickname },
         include: [{
             model: detailsDB,
             as: 'details'
@@ -25,24 +26,25 @@ router.post("/", async (req, res, next) => {
         if (req.body.title && type === "false") {
             // 실행위치 확인
             console.log("실행 1")
-            await todoDB.create({ title: req.body.title })
+            console.log(req.body)
+            await todoDB.create({ title: req.body.title, nickname: req.body.nickname })
         }
         if (req.body.title && type === "true") {
             // 실행위치 확인
             console.log("실행 2", req.body.title)
-            await todoDB.create({ title: req.body.title[0] })
+            await todoDB.create({ title: req.body.title[0], nickname: req.body.nickname })
 
             // todo_num 찾기
             const todo_num = await todoDB.findAll({
                 limit: 1,
                 order: [['sdate', 'DESC']],
                 attributes: ['todo_num'],
-                where: { title: req.body.title[0] }
+                where: { title: req.body.title[0], nickname: req.body.nickname }
             });
 
             // title 중 첫번째 title을 빼고 나머지를 detail로 넣기위해 분리
             const data = req.body.title.slice(1);
-            await detailsDB.bulkCreate(data.map(title => ({ title: title, todo_num: todo_num[0].todo_num })))
+            await detailsDB.bulkCreate(data.map(title => ({ title: title, todo_num: todo_num[0].todo_num, nickname: req.body.nickname })))
 
         }
     } catch (error) {
