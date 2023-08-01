@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:todolist_app/comps/expansion_tile.dart';
@@ -6,7 +7,7 @@ import 'package:todolist_app/comps/expansion_tile.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: 'assets/config/.env');
-  KakaoSdk.init(nativeAppKey: dotenv.env['APP_KEY']);
+  KakaoSdk.init(nativeAppKey: dotenv.env['APP_KEY'], javaScriptAppKey: dotenv.env['JAVASCRIPT_APP_KEY']);
   runApp(const Login());
 }
 
@@ -32,19 +33,45 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  Future loginWithKakaoAccount() async {
-    try {
-      OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
-      print("token : $token");
+  void changepage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ExpansionTiles(),
+      ),
+    );
+  }
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const ExpansionTiles(),
-        ),
-      );
-    } catch (e) {
-      print("로그인 실패");
+  Future loginWithKakaoAccount() async {
+    if (await isKakaoTalkInstalled()) {
+      try {
+        await UserApi.instance.loginWithKakaoTalk();
+        changepage();
+      } catch (error) {
+        print('카카오톡으로 로그인 실패 $error');
+
+        // 사용자가 카카오톡 설치 후 디바이스 권한 요청 화면에서 로그인을 취소한 경우,
+        // 의도적인 로그인 취소로 보고 카카오계정으로 로그인 시도 없이 로그인 취소로 처리 (예: 뒤로 가기)
+        if (error is PlatformException && error.code == 'CANCELED') {
+          return;
+        }
+        // 카카오톡에 연결된 카카오계정이 없는 경우, 카카오계정으로 로그인
+        try {
+          await UserApi.instance.loginWithKakaoAccount();
+          changepage();
+          print('카카오계정으로 로그인 성공');
+        } catch (error) {
+          print('카카오계정으로 로그인 실패 $error');
+        }
+      }
+    } else {
+      try {
+        await UserApi.instance.loginWithKakaoAccount();
+        changepage();
+        print('카카오계정으로 로그인 성공');
+      } catch (error) {
+        print('카카오계정으로 로그인 실패 $error');
+      }
     }
   }
 

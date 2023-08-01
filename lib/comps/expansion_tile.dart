@@ -12,11 +12,8 @@ class ExpansionTiles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "todolist_App",
-      theme: ThemeData.dark(),
-      home: const ListPage(),
+    return const Scaffold(
+      body: ListPage(),
     );
   }
 }
@@ -52,6 +49,7 @@ class _ListPageState extends State<ListPage> {
     }
 
     check_user_info();
+    getList();
   }
 
   Future<List<dynamic>> getList() async {

@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
@@ -28,7 +27,7 @@ class ListPage extends StatefulWidget {
 }
 
 class _ListPageState extends State<ListPage> {
-  final url = Uri.parse(dotenv.env['LOCAL_URL'].toString());
+  final url = Uri.parse("http://192.168.0.5:3001/");
   String option = "기본";
   bool showDetail = false;
   List<Widget> textFields = [];
