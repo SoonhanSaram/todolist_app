@@ -14,3 +14,4 @@ A new Flutter project.
 
 
 ## todolist 무중단 배포 성공
+[ec2 인스턴스부터 배포까지](https://www.notion.so/EC2-_nodejs-mysql-git-EC2-0bf1f6fceb5e4d06a46c7065015e8b97)
